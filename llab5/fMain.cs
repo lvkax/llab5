@@ -20,6 +20,7 @@ namespace llab5
         }
 
 
+
         private void fMain_Load(object sender, EventArgs e)
         {
             gvPhones.AutoGenerateColumns = false;
@@ -68,12 +69,31 @@ namespace llab5
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            SmartPhone phone = new SmartPhone();
-
-            fPhone fp = new fPhone(phone);
-            if (fp.ShowDialog() == DialogResult.OK)
+            using (PhoneType phoneTypeForm = new PhoneType())
             {
-                bindScrPhones.Add(phone);
+                if (phoneTypeForm.ShowDialog() == DialogResult.OK)
+                {
+                    Phone phone;
+
+                    // Вибір типу телефону
+                    if (phoneTypeForm.SelectedPhoneType == "SmartPhone")
+                    {
+                        phone = new SmartPhone();
+                    }
+                    else
+                    {
+                        phone = new BasicPhone();
+                    }
+
+                    // Відкриваємо форму для введення деталей телефону
+                    using (fPhone fp = new fPhone(phone))
+                    {
+                        if (fp.ShowDialog() == DialogResult.OK)
+                        {
+                            bindScrPhones.Add(phone);
+                        }
+                    }
+                }
             }
         }
 
@@ -190,100 +210,131 @@ namespace llab5
 
         private void btnOpenFromText_Click(object sender, EventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Текстовi файли (*.txt)|*.txt|All files (**) | *.*";
-            openFileDialog.Title = "Прочитати данi у текстовому форматi";
-            openFileDialog.InitialDirectory = Application.StartupPath;
-            StreamReader sr;
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Filter = "Текстові файли (*.txt)|*.txt|All files (*.*)|*.*",
+                Title = "Прочитати дані у текстовому форматі",
+                InitialDirectory = Application.StartupPath
+            };
+
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                bindScrPhones.Clear(); sr = new StreamReader(openFileDialog.FileName, Encoding.UTF8);
-                string s;
-                try
+                bindScrPhones.Clear();
+                using (StreamReader sr = new StreamReader(openFileDialog.FileName, Encoding.UTF8))
                 {
-                    while ((s = sr.ReadLine()) != null)
+                    string line;
+                    try
                     {
-                        string[] split = s.Split('\t');
-                        SmartPhone phone = new SmartPhone(split[0], split[1], split[2],
-                        split[3], split[4], split[5],
-                        bool.Parse(split[6]), bool.Parse(split[7]));
-                        bindScrPhones.Add(phone);
+                        while ((line = sr.ReadLine()) != null)
+                        {
+                            string[] split = line.Split('\t');
+                            Phone phone;
+
+                            if (split.Length > 5) // Умова, якщо це смартфон
+                            {
+                                phone = new SmartPhone
+                                {
+                                    Name = split[0],
+                                    Model = split[1],
+                                    Cost = split[2],
+                                    ReleaseYear = split[3],
+                                    YearOfPurchase = split[4],
+                                    BatteryCapacity = split[5],
+                                    Has3Cameras = bool.Parse(split[6]),
+                                    HasWirelessCharging = bool.Parse(split[7])
+                                };
+                            }
+                            else // Інакше - звичайний телефон
+                            {
+                                phone = new BasicPhone
+                                {
+                                    Name = split[0],
+                                    Model = split[1],
+                                    Cost = split[2],
+                                    ReleaseYear = split[3],
+                                    YearOfPurchase = split[4]
+                                };
+                            }
+
+                            bindScrPhones.Add(phone);
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Сталась помилка: \n{0}", ex.Message,
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                finally
-                {
-                    sr.Close();
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Сталась помилка: {ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             }
         }
 
         private void btnOpenFromBinary_Click(object sender, EventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Файли даних (*.phones)|*.phones|All files (**) | ** ";
-            openFileDialog.Title = "Прочитати данi у бiнарному форматi";
-            openFileDialog.InitialDirectory = Application.StartupPath;
-            BinaryReader br;
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Filter = "Файли даних (*.phones)|*.phones|All files (*.*)|*.*",
+                Title = "Прочитати дані у бінарному форматі",
+                InitialDirectory = Application.StartupPath
+            };
+
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 bindScrPhones.Clear();
-                br = new BinaryReader(openFileDialog.OpenFile());
-                try
+
+                using (BinaryReader br = new BinaryReader(openFileDialog.OpenFile()))
                 {
-                    SmartPhone phone;
-                    while (br.BaseStream.Position < br.BaseStream.Length)
+                    try
                     {
-                        phone = new SmartPhone();
-                        for (int i = 1; i <= 8; i++)
+                        while (br.BaseStream.Position < br.BaseStream.Length)
                         {
-                            switch (i)
+                            // Читаємо основні поля, які спільні для всіх типів телефонів
+                            string name = br.ReadString();
+                            string model = br.ReadString();
+                            string cost = br.ReadString();
+                            string releaseYear = br.ReadString();
+                            string yearOfPurchase = br.ReadString();
+
+                            // Спробуємо зчитати додаткові поля для SmartPhone
+                            try
                             {
-                                case 1:
-                                    phone.Name = br.ReadString();
-                                    break;
-                                case 2:
-                                    phone.Model = br.ReadString();
-                                    break;
-                                case 3:
-                                    phone.Cost = br.ReadString();
-                                    break;
-                                case 4:
-                                    phone.ReleaseYear = br.ReadString();
-                                    break;
-                                case 5:
-                                    phone.YearOfPurchase = br.ReadString();
-                                    break;
-                                case 6:
-                                    phone.BatteryCapacity = br.ReadString();
-                                    break;
-                                case 7:
-                                    phone.Has3Cameras = br.ReadBoolean();
-                                    break;
-                                case 8:
-                                    phone.HasWirelessCharging = br.ReadBoolean();
-                                    break;
+                                string batteryCapacity = br.ReadString();
+                                bool has3Cameras = br.ReadBoolean();
+                                bool hasWirelessCharging = br.ReadBoolean();
+
+                                // Якщо ми змогли прочитати ці поля, значить це SmartPhone
+                                SmartPhone smartPhone = new SmartPhone
+                                {
+                                    Name = name,
+                                    Model = model,
+                                    Cost = cost,
+                                    ReleaseYear = releaseYear,
+                                    YearOfPurchase = yearOfPurchase,
+                                    BatteryCapacity = batteryCapacity,
+                                    Has3Cameras = has3Cameras,
+                                    HasWirelessCharging = hasWirelessCharging
+                                };
+                                bindScrPhones.Add(smartPhone);
+                            }
+                            catch (EndOfStreamException)
+                            {
+                                // Якщо додаткові поля не прочитані, значить це BasicPhone
+                                BasicPhone basicPhone = new BasicPhone
+                                {
+                                    Name = name,
+                                    Model = model,
+                                    Cost = cost,
+                                    ReleaseYear = releaseYear,
+                                    YearOfPurchase = yearOfPurchase
+                                };
+                                bindScrPhones.Add(basicPhone);
                             }
                         }
-                        bindScrPhones.Add(phone);
                     }
-
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Сталась помилка: \n{0}", ex.Message,
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                finally
-                {
-                    br.Close();
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Сталась помилка: {ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             }
-
         }
 
     }

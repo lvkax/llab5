@@ -13,8 +13,8 @@ namespace llab5
 {
     public partial class fPhone : Form
     {
-        private PhoneBase ThePhone;
-        public fPhone(PhoneBase phone)
+        private Phone ThePhone;
+        public fPhone(Phone phone)
         {
             ThePhone = phone;
             InitializeComponent();
@@ -38,11 +38,12 @@ namespace llab5
                 tbReleaseYear.Text = ThePhone.ReleaseYear;
                 tbYearofPurchase.Text = ThePhone.YearOfPurchase;
 
+                // Если это смартфон, включаем дополнительные свойства
                 if (ThePhone is SmartPhone smartphone)
                 {
-                    tbBatteryCapacity.Text = ThePhone.BatteryCapacity;
-                    cbHas3Cameras.Checked = ThePhone.Has3Cameras;
-                    cbHasWirelessCharging.Checked = ThePhone.HasWirelessCharging;
+                    tbBatteryCapacity.Text = smartphone.BatteryCapacity;
+                    cbHas3Cameras.Checked = smartphone.Has3Cameras;
+                    cbHasWirelessCharging.Checked = smartphone.HasWirelessCharging;
                 }
                 else
                 {
@@ -50,7 +51,6 @@ namespace llab5
                     cbHas3Cameras.Enabled = false;
                     cbHasWirelessCharging.Enabled = false;
                 }
-                
             }
         }
 
@@ -61,9 +61,13 @@ namespace llab5
             ThePhone.Cost = tbCost.Text.Trim();
             ThePhone.ReleaseYear = tbReleaseYear.Text.Trim();
             ThePhone.YearOfPurchase = tbYearofPurchase.Text.Trim();
-            ThePhone.BatteryCapacity = tbBatteryCapacity.Text.Trim();
-            ThePhone.Has3Cameras = cbHas3Cameras.Checked;
-            ThePhone.HasWirelessCharging = cbHasWirelessCharging.Checked;
+
+            if (ThePhone is SmartPhone smartphone)
+            {
+                smartphone.BatteryCapacity = tbBatteryCapacity.Text.Trim();
+                smartphone.Has3Cameras = cbHas3Cameras.Checked;
+                smartphone.HasWirelessCharging = cbHasWirelessCharging.Checked;
+            }
 
             DialogResult = DialogResult.OK;
         }
