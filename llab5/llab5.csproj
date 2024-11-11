@@ -46,7 +46,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BasicPhone.cs" />
     <Compile Include="Phone.cs" />
+    <Compile Include="SmartPhone.cs" />
     <Compile Include="fMain.cs">
       <SubType>Form</SubType>
     </Compile>

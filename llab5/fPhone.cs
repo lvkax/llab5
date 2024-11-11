@@ -13,13 +13,16 @@ namespace llab5
 {
     public partial class fPhone : Form
     {
-        public fPhone()
+        private PhoneBase ThePhone;
+        public fPhone(PhoneBase phone)
         {
+            ThePhone = phone;
             InitializeComponent();
-        }
-        public Phone ThePhone;
+            
+         }
+        
 
-        public fPhone(Phone t)
+        public fPhone(SmartPhone t)
         {
             ThePhone = t;
             InitializeComponent();
@@ -34,9 +37,20 @@ namespace llab5
                 tbCost.Text = ThePhone.Cost;
                 tbReleaseYear.Text = ThePhone.ReleaseYear;
                 tbYearofPurchase.Text = ThePhone.YearOfPurchase;
-                tbBatteryCapacity.Text = ThePhone.BatteryCapacity;
-                cbHas3Cameras.Checked = ThePhone.Has3Cameras;
-                cbHasWirelessCharging.Checked = ThePhone.HasWirelessCharging;
+
+                if (ThePhone is SmartPhone smartphone)
+                {
+                    tbBatteryCapacity.Text = ThePhone.BatteryCapacity;
+                    cbHas3Cameras.Checked = ThePhone.Has3Cameras;
+                    cbHasWirelessCharging.Checked = ThePhone.HasWirelessCharging;
+                }
+                else
+                {
+                    tbBatteryCapacity.Enabled = false;
+                    cbHas3Cameras.Enabled = false;
+                    cbHasWirelessCharging.Enabled = false;
+                }
+                
             }
         }
 

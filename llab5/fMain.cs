@@ -64,15 +64,11 @@ namespace llab5
             column.Name = "Бездротова зарядка";
             gvPhones.Columns.Add(column);
 
-
-            bindScrPhones.Add(new Phone("iPhone", "13 Pro Max", "800", "2021", "2022", "3200", true, true));
-            EventArgs args = new EventArgs(); OnResize(args);
-
         }
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            Phone phone = new Phone();
+            SmartPhone phone = new SmartPhone();
 
             fPhone fp = new fPhone(phone);
             if (fp.ShowDialog() == DialogResult.OK)
@@ -83,7 +79,7 @@ namespace llab5
 
         private void btnEdit_Click(object sender, EventArgs e)
         {
-            Phone phone = (Phone)bindScrPhones.List[bindScrPhones.Position];
+            SmartPhone phone = (SmartPhone)bindScrPhones.List[bindScrPhones.Position];
 
             fPhone fp = new fPhone(phone);
             if (fp.ShowDialog() == DialogResult.OK)
@@ -137,7 +133,7 @@ namespace llab5
                 sw = new StreamWriter(saveFileDialog.FileName, false, Encoding.UTF8);
                 try
                 {
-                    foreach (Phone phone in bindScrPhones.List)
+                    foreach (SmartPhone phone in bindScrPhones.List)
                     {
                         sw.Write(phone.Name + "\t" + phone.Model + "\t" + phone.Cost + "\t" +
                             phone.ReleaseYear + "\t" + phone.YearOfPurchase + "\t" +
@@ -167,7 +163,7 @@ namespace llab5
 
                 try
                 {
-                    foreach (Phone phone in bindScrPhones.List)
+                    foreach (SmartPhone phone in bindScrPhones.List)
                     {
                         bw.Write(phone.Name);
                         bw.Write(phone.Model);
@@ -208,7 +204,7 @@ namespace llab5
                     while ((s = sr.ReadLine()) != null)
                     {
                         string[] split = s.Split('\t');
-                        Phone phone = new Phone(split[0], split[1], split[2],
+                        SmartPhone phone = new SmartPhone(split[0], split[1], split[2],
                         split[3], split[4], split[5],
                         bool.Parse(split[6]), bool.Parse(split[7]));
                         bindScrPhones.Add(phone);
@@ -239,10 +235,10 @@ namespace llab5
                 br = new BinaryReader(openFileDialog.OpenFile());
                 try
                 {
-                    Phone phone;
+                    SmartPhone phone;
                     while (br.BaseStream.Position < br.BaseStream.Length)
                     {
-                        phone = new Phone();
+                        phone = new SmartPhone();
                         for (int i = 1; i <= 8; i++)
                         {
                             switch (i)
